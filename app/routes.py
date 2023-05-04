@@ -17,38 +17,49 @@ def create_book():
 
 @books_bp.route("", methods=["GET"])
 def read_all_books():
-        books_response = []
+
+    title_query = request.args.get("title")
+    if title_query:
+        books = Book.query.filter_by(title=title_query)
+    else:
         books = Book.query.all()
-        for book in books:
-            books_response.append({
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            })
-        return jsonify(books_response)
+
+    books_response = []
+    for book in books:
+        books_response.append({
+            "id": book.id,
+            "title": book.title,
+            "description": book.description
+        })
+
+    return jsonify(books_response)
 
 def validate_book(book_id):
     try:
         book_id = int(book_id)
     except:
-        abort(make_response({"message":f"book {book_id} invalid"}, 400))
+        abort(make_response({"message": f"book {book_id} invalid"}, 400))
 
     book = Book.query.get(book_id)
 
     if not book:
-        abort(make_response({"message":f"book {book_id} not found"}, 404))
+        message = f"book {book_id} not found"
+        abort(make_response({"message": message}, 404))
+        # abort(make_response({"message":f"book {book_id} not found"}, 404))
     
     return book
 
-@books_bp.route("<book_id>/", methods=["GET"])
+@books_bp.route("/<book_id>", methods=["GET"])
 def read_one_book(book_id):
-    book = Book.query.get(book_id)
+    # book = Book.query.get(book_id)
+    book = validate_book(book_id)
 
     return {
         "id": book.id,
         "title": book.title,
         "description": book.description
     }
+
 
 @books_bp.route("/<book_id>", methods=["PUT"])
 def update_book(book_id):
@@ -71,7 +82,10 @@ def delete_book(book_id):
     db.session.delete(book)
     db.session.commit()
 
-    return (f"Book #{book_id} successfully deleted", 200)
+    message = f"Book #{book} successfully deleted"
+    return make_response({"Message": message}, 200)
+
+    # return (f"Book #{book_id} successfully deleted", 200)
 
 
 # FLASK_ENV=development flask run
