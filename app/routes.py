@@ -126,43 +126,18 @@ def create_book(author_id):
 
     author = validate_model(Author, author_id)
 
-    books_response = []
-    for book in author.books:
-        books_response.append(
-            {
-                "id": book.id,
-                "title": book.title,
-                "description": book.description
-            }
-        )
-    return jsonify(books_response)
-
+    request_body = request.get_json()
+    new_book = Book (
+        title=request_body["title"],
+        description=request_body["description"],
+        author=author
+    )
     
-
     db.session.add(new_book)
     db.session.commit()
 
     return make_response(jsonify(f"Book {new_book.title} by {new_book.author.name} successfully created"), 201)
 
-
-@authors_bp.route("", methods=["GET"])
-def read_all_books():
-
-
-@books_bp.route("", methods=["GET"])
-def read_all_books():
-
-    title_query = request.args.get("title")
-    if title_query:
-        books = Book.query.filter_by(title=title_query)
-    else:
-        books = Book.query.all()
-
-    books_response = []
-    for book in books:
-        books_response.append(book.to_dict())
-
-    return jsonify(books_response)
 
 
     # name_query = request.args.get("name")
